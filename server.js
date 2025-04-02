@@ -133,6 +133,22 @@ io.on('connection', (socket) => {
 
   });
 
+  // Relay status updates (mute/video)
+  socket.on('status-update', (payload) => {
+      const { room, type, isEnabled } = payload;
+      if (!room) return console.error('Status update received without room ID from', socket.id);
+      // console.log(`Relaying status update (${type}: ${isEnabled}) from ${socket.id} to room ${room}`); // Can be noisy
+      socket.to(room).emit('peer-status-update', { type, isEnabled, senderId: socket.id });
+  });
+
+  // Relay reactions
+  socket.on('reaction', (payload) => {
+      const { room, emoji } = payload;
+      if (!room) return console.error('Reaction received without room ID from', socket.id);
+      // console.log(`Relaying reaction (${emoji}) from ${socket.id} to room ${room}`);
+      socket.to(room).emit('reaction', { emoji, senderId: socket.id });
+  });
+
   // --- Disconnection --- Implement robust cleanup
 
   socket.on('disconnect', (reason) => {

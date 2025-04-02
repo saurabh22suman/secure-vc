@@ -4,34 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Video Call</title>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Secure Video Call</h1>
+    <div id="app-container" class="initial-state">
+        <h1>Secure Video Call</h1>
 
-    <!-- Room ID Display (always visible once room is set) -->
-    <div id="room-display" style="margin-bottom: 15px; display: none;">
-        Current Room: <strong id="currentRoomId"></strong>
-        <button id="copyRoomId" style="margin-left: 10px;">Copy ID</button>
-    </div>
+        <!-- Room ID Display (shown when in room) -->
+        <div id="room-display" style="display: none;">
+            Room: <strong id="currentRoomId"></strong>
+            <button id="copyRoomId" title="Copy Room ID"><i class="fa-regular fa-copy"></i></button>
+        </div>
 
-    <!-- Controls for Creating/Joining a Room -->
-    <div id="room-controls">
-        <input type="text" id="roomIdInput" placeholder="Enter Room ID" />
-        <button id="joinRoom">Join Room</button>
-        <button id="createRoom">Create Room & Start</button>
-        <!-- <p>Current Room: <span id="currentRoomId">None</span></p> --> <!-- Moved outside -->
-    </div>
+        <!-- Initial Controls for Creating/Joining a Room -->
+        <div id="room-controls">
+            <input type="text" id="roomIdInput" placeholder="Enter Room ID" />
+            <button id="joinRoom"><i class="fa-solid fa-right-to-bracket"></i> Join Room</button>
+            <button id="createRoom"><i class="fa-solid fa-plus"></i> Create Room & Start</button>
+        </div>
 
-    <!-- Video Elements -->
-    <div id="videos" style="display: none;"> <!-- Hide videos initially -->
-        <video id="localVideo" autoplay muted></video>
-        <video id="remoteVideo" autoplay></video>
-    </div>
+        <!-- Main Call Interface (shown when in call) -->
+        <div id="call-container" style="display: none;">
+            <!-- Waiting Overlay -->
+            <div id="waiting-overlay" class="hidden">
+                <p>Waiting for peer to join...</p>
+                <p>(Share Room ID: <strong id="waitingRoomId"></strong>)</p>
+                <!-- Optional: Add a spinner icon -->
+                <i class="fa-solid fa-spinner fa-spin"></i>
+            </div>
 
-    <!-- In-Call Controls -->
-    <div id="call-controls" style="display: none;">
-        <button id="endCall">End Call</button>
+            <video id="remoteVideo" autoplay></video>
+            <!-- Peer Status Icons -->
+            <div id="peer-status-icons" class="hidden">
+                <i id="peer-mic-status" class="fa-solid fa-microphone-slash" title="Peer is muted"></i>
+                <i id="peer-video-status" class="fa-solid fa-video-slash" title="Peer camera is off"></i>
+            </div>
+            <video id="localVideo" autoplay muted></video> <!-- Picture-in-picture -->
+
+            <!-- Container for floating emoji reactions -->
+            <div id="reactions-container"></div>
+
+            <div id="controls-overlay">
+                <!-- Individual Emoji Reaction Buttons -->
+                <button class="reaction-btn" data-emoji="👍" title="Thumbs Up">
+                    <i class="fa-regular fa-thumbs-up"></i>
+                </button>
+                <button class="reaction-btn" data-emoji="❤️" title="Heart">
+                     <i class="fa-regular fa-heart"></i>
+                </button>
+                <button class="reaction-btn" data-emoji="🎉" title="Party Popper">
+                     <i class="fa-solid fa-champagne-glasses"></i>
+                </button>
+
+                <span class="control-separator"></span>
+
+                <button id="muteButton" title="Mute Audio">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+                <button id="videoButton" title="Turn Camera Off">
+                    <i class="fa-solid fa-video"></i>
+                </button>
+                <button id="endCall" title="End Call" class="hangup">
+                    <i class="fa-solid fa-phone-slash"></i>
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>

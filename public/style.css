@@ -1,129 +1,383 @@
 body {
-    font-family: sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 20px;
-    background-color: #f4f4f4;
+    background-color: #202124; /* Dark background */
+    color: #e8eaed; /* Light text */
+    margin: 0;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+#app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 1200px;
+    flex-grow: 1;
+    height: 100%; /* Ensure app container fills body height */
 }
 
 h1 {
-    color: #333;
-}
-
-#videos {
-    display: flex;
-    gap: 20px;
+    color: #e8eaed;
     margin-bottom: 20px;
-    background-color: #fff;
-    padding: 10px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-video {
-    width: 320px;
-    height: 240px;
-    border: 1px solid #ccc;
-    background-color: #000;
-}
-
-#controls button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 0 10px;
-    border: none;
-    border-radius: 5px;
-    color: white;
-}
-
-#startCall {
-    background-color: #28a745; /* Green */
-}
-
-#startCall:disabled {
-    background-color: #aaa;
-    cursor: not-allowed;
-}
-
-#endCall {
-    background-color: #dc3545; /* Red */
-}
-
-#endCall:disabled {
-    background-color: #aaa;
-    cursor: not-allowed;
-}
-
+/* --- Room Display --- */
 #room-display {
-    padding: 10px;
-    background-color: #e9ecef;
-    border-radius: 5px;
+    padding: 8px 15px;
+    background-color: #3c4043;
+    border-radius: 20px;
     text-align: center;
+    font-size: 14px;
+    margin-bottom: 20px;
 }
 
 #room-display strong {
-    font-weight: bold;
-    margin-right: 5px;
+    font-weight: 600;
+    margin-right: 8px;
 }
 
 #copyRoomId {
-    padding: 5px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    background-color: #007bff; /* Blue */
-    color: white;
+    background: none;
     border: none;
-    border-radius: 3px;
+    color: #8ab4f8; /* Light blue */
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 5px;
 }
 
 #copyRoomId:hover {
-    background-color: #0056b3;
+    color: #aecbfa;
+}
+
+/* --- Room Controls (Initial) --- */
+#room-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    align-items: center;
 }
 
 #room-controls input[type="text"] {
-    padding: 8px;
-    margin-right: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 10px 15px;
+    border: 1px solid #5f6368;
+    border-radius: 20px;
+    background-color: #3c4043;
+    color: #e8eaed;
+    font-size: 14px;
+    min-width: 150px;
+}
+
+#room-controls input[type="text"]::placeholder {
+    color: #9aa0a6;
 }
 
 #room-controls button {
-    padding: 8px 15px;
+    padding: 10px 20px;
     font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    margin: 0 5px;
     border: none;
-    border-radius: 5px;
-    color: white;
+    border-radius: 20px;
+    color: #202124;
+    display: inline-flex; /* Align icon and text */
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+    transition: background-color 0.2s ease;
+}
+
+#room-controls button i {
+    font-size: 16px; /* Adjust icon size if needed */
 }
 
 #joinRoom {
-    background-color: #17a2b8; /* Teal */
+    background-color: #8ab4f8; /* Light blue */
+}
+#joinRoom:hover {
+    background-color: #aecbfa;
 }
 
 #createRoom {
-    background-color: #ffc107; /* Yellow */
-    color: #333;
+    background-color: #fdd663; /* Yellow */
+}
+#createRoom:hover {
+    background-color: #ffe082;
 }
 
-/* Adjust call control button if needed */
-#call-controls button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 0 10px;
-    border: none;
+/* --- Call Container --- */
+#call-container {
+    position: relative; /* Needed for absolute positioning of children */
+    width: 100%;
+    flex-grow: 1; /* Take available space */
+    background-color: #000;
+    border-radius: 12px;
+    overflow: hidden; /* Ensure PiP stays inside */
+    display: flex; /* Use flex for remote video centering */
+    justify-content: center;
+    align-items: center;
+}
+
+#remoteVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Show entire video, potentially with black bars */
+    display: block;
+    transition: box-shadow 0.3s ease; /* Add transition */
+}
+
+#remoteVideo.active-speaker {
+    box-shadow: 0 0 15px 5px rgba(74, 144, 226, 0.7); /* Blue glow */
+}
+
+#localVideo {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 20%; /* Adjust size as needed */
+    max-width: 200px;
+    height: auto;
+    border: 2px solid #5f6368;
+    border-radius: 8px;
+    background-color: #000;
+    z-index: 10;
+    transition: border-color 0.3s ease; /* Add transition */
+}
+
+#localVideo.active-speaker {
+    border-color: #4a90e2;
+}
+
+/* --- Peer Status Icons --- */
+#peer-status-icons {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 5px 8px;
     border-radius: 5px;
-    color: white;
+    z-index: 12; /* Above remote video, below local video potentially */
+    display: flex;
+    gap: 10px;
 }
 
-#endCall {
-    background-color: #dc3545; /* Red */
+#peer-status-icons.hidden {
+    display: none; /* Simple hide/show */
 }
 
-#endCall:disabled {
-    background-color: #aaa;
-    cursor: not-allowed;
+#peer-status-icons i {
+    color: #ff4d4d; /* Red color for status icons */
+    font-size: 16px;
+}
+
+/* Hide individual icons by default, show only when status applies */
+#peer-status-icons i.hidden {
+    display: none;
+}
+
+/* --- Reactions Container --- */
+#reactions-container {
+    position: absolute;
+    bottom: 80px; /* Position above controls overlay */
+    left: 10px;
+    right: 10px;
+    height: 300px; /* Limit height */
+    overflow: hidden;
+    pointer-events: none; /* Don't block interactions with video/controls */
+    z-index: 15; /* Above local video, below controls */
+}
+
+.floating-emoji {
+    position: absolute;
+    bottom: 0;
+    left: 50%; /* Start near center */
+    transform: translateX(-50%);
+    font-size: 30px; /* Adjust size */
+    opacity: 1;
+    animation: floatUp 4s ease-out forwards;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+}
+
+@keyframes floatUp {
+    0% {
+        bottom: 0;
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+    100% {
+        bottom: 90%; /* Float towards the top */
+        opacity: 0;
+        transform: translateX(calc(-50% + var(--drift-x, 0px))) scale(1.5); /* Add horizontal drift and slight grow */
+    }
+}
+
+/* --- Controls Overlay --- */
+#controls-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 20px; /* More padding */
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%); /* Darker gradient */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    opacity: 0;
+    transform: translateY(20px); /* Start slightly lower */
+    transition: opacity 0.3s ease, transform 0.3s ease; /* Add transform to transition */
+    z-index: 20;
+}
+
+#call-container:hover #controls-overlay {
+    opacity: 1;
+    transform: translateY(0); /* Move to original position */
+}
+
+/* General style for main control buttons */
+#controls-overlay > button {
+    background-color: rgba(60, 64, 67, 0.8);
+    color: #e8eaed;
+    border: none;
+    border-radius: 50%;
+    width: 55px; /* Slightly larger main buttons */
+    height: 55px;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+#controls-overlay > button:hover {
+    background-color: rgba(95, 99, 104, 0.9);
+}
+
+/* Hangup button specific style */
+#controls-overlay button#endCall {
+    background-color: rgba(234, 67, 53, 0.9); /* Red for hangup */
+    width: 65px; /* Make hangup slightly bigger */
+    height: 55px; /* Keep height consistent or make slightly oval */
+    border-radius: 28px; /* More pill-shaped */
+}
+
+#controls-overlay button#endCall:hover {
+    background-color: rgba(217, 48, 37, 1);
+}
+
+/* Style for muted state */
+#muteButton.muted i::before {
+    content: "\f131"; /* Font Awesome microphone-slash icon unicode */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+#muteButton.muted {
+    background-color: rgba(234, 67, 53, 0.8); /* Red background when muted */
+}
+
+/* Style for camera off state */
+#videoButton.off i::before {
+    content: "\f03d"; /* Font Awesome video-slash icon unicode */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+#videoButton.off {
+    background-color: rgba(234, 67, 53, 0.8); /* Red background when camera off */
+}
+
+/* Style for buttons inside the controls overlay */
+#controls-overlay button.reaction-btn {
+    background-color: rgba(60, 64, 67, 0.8);
+    color: #e8eaed;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+#controls-overlay button.reaction-btn:hover {
+    background-color: rgba(95, 99, 104, 0.9);
+}
+
+.control-separator {
+    width: 1px;
+    height: 30px; /* Taller separator */
+    background-color: rgba(255, 255, 255, 0.3);
+    margin: 0 8px; /* Adjust spacing around separator */
+}
+
+#app-container.initial-state {
+    /* Example: Subtle background pattern */
+    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0) 70%);
+    background-size: 50px 50px;
+    /* You could use an image instead: */
+    /* background-image: url('/images/your-background.jpg'); */
+    /* background-size: cover; */
+    /* background-position: center; */
+    justify-content: center; /* Center controls vertically in initial state */
+}
+
+/* Ensure h1 is styled appropriately */
+#app-container.initial-state h1 {
+    margin-bottom: 40px; /* More space below title */
+    font-size: 2.5em; /* Larger title */
+}
+
+/* Remove Emoji Popup Styles */
+/* #reactions-popup-container { ... } */
+/* #emojiPopupButton { ... } */
+/* #emoji-menu { ... } */
+/* #emoji-menu.hidden { ... } */
+/* #emoji-menu button.reaction-btn { ... } */
+/* #emoji-menu button.reaction-btn:hover { ... } */
+
+/* --- Waiting Overlay --- */
+#waiting-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #e8eaed;
+    z-index: 25; /* Above videos, potentially below controls if they should be usable */
+    text-align: center;
+    opacity: 1;
+    transition: opacity 0.5s ease;
+}
+
+#waiting-overlay.hidden {
+    opacity: 0;
+    pointer-events: none; /* Allow clicks through when hidden */
+    visibility: hidden; /* Use visibility for better accessibility/performance */
+    transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+}
+
+#waiting-overlay p {
+    margin: 5px 0;
+}
+
+#waiting-overlay strong {
+    color: #fdd663; /* Yellow highlight for room ID */
+}
+
+#waiting-overlay i {
+    font-size: 24px;
+    margin-top: 15px;
+    color: #8ab4f8;
 } 

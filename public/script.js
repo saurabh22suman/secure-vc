@@ -11,7 +11,17 @@ const callControlsDiv = document.getElementById('call-controls');
 const roomDisplayDiv = document.getElementById('room-display');
 const copyRoomIdButton = document.getElementById('copyRoomId');
 const videosDiv = document.getElementById('videos');
-
+const callContainerDiv = document.getElementById('call-container');
+const muteButton = document.getElementById('muteButton');
+const appContainer = document.getElementById('app-container'); // Reference to app container
+const reactionsContainer = document.getElementById('reactions-container');
+const reactionButtons = document.querySelectorAll('.reaction-btn');
+const videoButton = document.getElementById('videoButton');
+const waitingOverlay = document.getElementById('waiting-overlay'); // New
+const waitingRoomId = document.getElementById('waitingRoomId'); // New
+const peerStatusIcons = document.getElementById('peer-status-icons'); // New
+const peerMicStatus = document.getElementById('peer-mic-status'); // New
+const peerVideoStatus = document.getElementById('peer-video-status'); // New
 
 const socket = io(); // Initialize Socket.IO connection
 
@@ -21,6 +31,8 @@ let peerConnection;
 let currentRoom = null; // Variable to store the current room ID
 let isCaller = false; // Track if this client initiated the call
 let callInitiated = false; // New flag to prevent duplicate call starts
+let isMuted = false; // Track mute state
+let isVideoOff = false; // New state for video
 
 // Configuration for RTCPeerConnection (using Google's public STUN servers)
 const configuration = {
@@ -88,8 +100,11 @@ socket.on('room-created', (roomId) => {
     // Update UI
     roomControlsDiv.style.display = 'none';
     roomDisplayDiv.style.display = 'block';
-    videosDiv.style.display = 'flex';
-    callControlsDiv.style.display = 'block';
+    callContainerDiv.style.display = 'flex';
+    appContainer.classList.remove('initial-state'); // Remove initial state class
+    // Show waiting message for caller
+    waitingRoomId.textContent = roomId;
+    waitingOverlay.classList.remove('hidden');
     // Caller waits for peer to join
 });
 
@@ -100,14 +115,16 @@ socket.on('room-joined', (roomId) => {
     // Update UI
     roomControlsDiv.style.display = 'none';
     roomDisplayDiv.style.display = 'block';
-    videosDiv.style.display = 'flex';
-    callControlsDiv.style.display = 'block';
+    callContainerDiv.style.display = 'flex';
+    appContainer.classList.remove('initial-state'); // Remove initial state class
+    waitingOverlay.classList.add('hidden'); // Ensure hidden for joiner
     // Non-caller signals readiness to start call negotiation
     socket.emit('ready', currentRoom);
 });
 
 socket.on('peer-joined', () => {
     console.log('Another peer joined the room. Initiating call (if caller).');
+    waitingOverlay.classList.add('hidden'); // Hide waiting message
     if (isCaller && !callInitiated) { // Check flag
         callInitiated = true; // Set flag
         startCall(); // Caller starts the WebRTC negotiation
@@ -116,6 +133,7 @@ socket.on('peer-joined', () => {
 
 socket.on('ready', () => {
     console.log('Peer is ready. Initiating call (if caller).');
+    // No need to hide waiting message here, peer-joined already did
     if (isCaller && !callInitiated) { // Check flag
         callInitiated = true; // Set flag
         startCall(); // Caller starts the WebRTC negotiation
@@ -311,12 +329,29 @@ function handleHangup(shouldEmit) {
     remoteStream = null;
 
     // Reset UI
-    roomControlsDiv.style.display = 'block';
-    callControlsDiv.style.display = 'none';
+    roomControlsDiv.style.display = 'flex'; // Show room controls again
     roomDisplayDiv.style.display = 'none';
-    videosDiv.style.display = 'none';
+    callContainerDiv.style.display = 'none'; // Hide the main call container
+    appContainer.classList.add('initial-state'); // Add initial state class back
     currentRoomIdSpan.textContent = '';
     roomIdInput.value = '';
+    // Reset mute button state visually
+    isMuted = false;
+    muteButton.classList.remove('muted');
+    muteButton.title = 'Mute Audio';
+    let icon = muteButton.querySelector('i');
+    if (icon) icon.className = 'fa-solid fa-microphone';
+    // Reset video button state visually
+    isVideoOff = false;
+    videoButton.classList.remove('off');
+    videoButton.title = 'Turn Camera Off';
+    icon = videoButton.querySelector('i');
+    if (icon) icon.className = 'fa-solid fa-video';
+    waitingOverlay.classList.add('hidden'); // Ensure hidden on hangup
+    // Hide peer status icons
+    peerStatusIcons.classList.add('hidden');
+    peerMicStatus.classList.add('hidden');
+    peerVideoStatus.classList.add('hidden');
 
     // Send hangup signal to the other peer if initiated by user action
     if (shouldEmit && currentRoom) {
@@ -384,8 +419,125 @@ copyRoomIdButton.addEventListener('click', () => {
     }
 });
 
+// --- Mute/Unmute Logic ---
+muteButton.addEventListener('click', () => {
+    if (!localStream) {
+        console.warn('Cannot mute/unmute without local stream.');
+        return;
+    }
+    isMuted = !isMuted;
+    localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMuted; // Enable/disable the audio track
+    });
+
+    // Update button UI
+    muteButton.classList.toggle('muted', isMuted);
+    muteButton.title = isMuted ? 'Unmute Audio' : 'Mute Audio';
+    let icon = muteButton.querySelector('i');
+    if (icon) {
+        icon.className = isMuted ? 'fa-solid fa-microphone-slash' : 'fa-solid fa-microphone';
+    }
+    console.log(isMuted ? 'Audio Muted' : 'Audio Unmuted');
+
+    // Send status update to peer
+    if (currentRoom) {
+        socket.emit('status-update', { room: currentRoom, type: 'audio', isEnabled: !isMuted });
+    }
+});
+
+// --- Video Toggle Logic ---
+videoButton.addEventListener('click', () => {
+    if (!localStream) {
+        console.warn('Cannot toggle video without local stream.');
+        return;
+    }
+    isVideoOff = !isVideoOff;
+    localStream.getVideoTracks().forEach(track => {
+        track.enabled = !isVideoOff; // Enable/disable the video track
+    });
+
+    // Update button UI
+    videoButton.classList.toggle('off', isVideoOff);
+    videoButton.title = isVideoOff ? 'Turn Camera On' : 'Turn Camera Off';
+    icon = videoButton.querySelector('i');
+    if (icon) {
+        icon.className = isVideoOff ? 'fa-solid fa-video-slash' : 'fa-solid fa-video';
+    }
+    console.log(isVideoOff ? 'Video Off' : 'Video On');
+
+    // Send status update to peer
+    if (currentRoom) {
+        socket.emit('status-update', { room: currentRoom, type: 'video', isEnabled: !isVideoOff });
+    }
+});
+
 
 // --- Initial State ---
-callControlsDiv.style.display = 'none';
+// callControlsDiv.style.display = 'none'; // No longer needed
 roomDisplayDiv.style.display = 'none';
-videosDiv.style.display = 'none'; // Ensure videos are hidden initially
+// videosDiv.style.display = 'none'; // No longer needed
+callContainerDiv.style.display = 'none'; // Ensure call container is hidden initially
+
+// Ensure initial state class is present on load (it's added in HTML now)
+// appContainer.classList.add('initial-state');
+
+// --- Reaction Logic ---
+
+function showFloatingEmoji(emoji) {
+    if (!reactionsContainer) return;
+
+    const emojiEl = document.createElement('span');
+    emojiEl.classList.add('floating-emoji');
+    emojiEl.textContent = emoji;
+
+    // Add random horizontal drift
+    const drift = (Math.random() - 0.5) * 100; // e.g., -50px to +50px
+    emojiEl.style.setProperty('--drift-x', `${drift}px`);
+    // Slightly randomize starting horizontal position too
+    emojiEl.style.left = `${50 + (Math.random() - 0.5) * 40}%`;
+
+    reactionsContainer.appendChild(emojiEl);
+
+    // Remove the element after the animation completes (4s duration)
+    emojiEl.addEventListener('animationend', () => {
+        emojiEl.remove();
+    });
+}
+
+// Re-verify listeners are on the individual buttons
+reactionButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const emoji = button.dataset.emoji;
+        if (emoji && currentRoom) {
+            console.log('Sending reaction:', emoji);
+            showFloatingEmoji(emoji); // Show locally
+            socket.emit('reaction', { emoji: emoji, room: currentRoom }); // Send to peer
+        }
+    });
+});
+
+// Listen for reactions from the peer
+socket.on('reaction', (data) => {
+    console.log('Received reaction:', data.emoji);
+    showFloatingEmoji(data.emoji);
+});
+
+// --- Peer Status Update Listener ---
+socket.on('peer-status-update', ({ type, isEnabled }) => {
+    console.log(`Peer status update received: ${type} is ${isEnabled ? 'enabled' : 'disabled'}`);
+    if (type === 'audio') {
+        peerMicStatus.classList.toggle('hidden', isEnabled);
+    } else if (type === 'video') {
+        peerVideoStatus.classList.toggle('hidden', isEnabled);
+    }
+
+    // Show the container if either icon is visible
+    const micHidden = peerMicStatus.classList.contains('hidden');
+    const videoHidden = peerVideoStatus.classList.contains('hidden');
+    peerStatusIcons.classList.toggle('hidden', micHidden && videoHidden);
+});
+
+// Initialize peer status icons as hidden
+if(peerMicStatus) peerMicStatus.classList.add('hidden');
+if(peerVideoStatus) peerVideoStatus.classList.add('hidden');
+if(peerStatusIcons) peerStatusIcons.classList.add('hidden');
