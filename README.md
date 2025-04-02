@@ -1,4 +1,4 @@
-# Secure VC - Simple WebRTC Video Call
+# B4 Secure VC - Simple WebRTC Video Call
 
 A basic web application demonstrating a peer-to-peer video call using WebRTC and Socket.IO for signaling.
 
@@ -8,6 +8,9 @@ A basic web application demonstrating a peer-to-peer video call using WebRTC and
 *   Join existing rooms using a Room ID.
 *   Peer-to-peer video and audio streaming.
 *   Encrypted communication via WebRTC (DTLS/SRTP).
+*   Mute/Unmute audio and Toggle Camera on/off.
+*   Floating emoji reactions.
+*   Peer status indicators (muted/camera off).
 
 ## Setup
 

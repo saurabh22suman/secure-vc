@@ -1,13 +1,14 @@
 {
   "name": "secure-vc",
   "version": "1.0.0",
-  "description": "Simple on-demand video call application",
+  "description": "B4 Secure VC - Simple on-demand WebRTC video call application",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^5.1.0",
-    "socket.io": "^4.8.1"
-  }
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5"
+  },
+  "devDependencies": {}
 }

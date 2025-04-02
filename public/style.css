@@ -318,20 +318,28 @@ h1 {
 }
 
 #app-container.initial-state {
-    /* Example: Subtle background pattern */
-    background-image: radial-gradient(circle at center, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0) 70%);
-    background-size: 50px 50px;
-    /* You could use an image instead: */
-    /* background-image: url('/images/your-background.jpg'); */
-    /* background-size: cover; */
-    /* background-position: center; */
-    justify-content: center; /* Center controls vertically in initial state */
+    /* Anime background image */
+    background-image: url('https://images.unsplash.com/photo-1576111660019-f56c15878193?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    justify-content: center;
 }
 
 /* Ensure h1 is styled appropriately */
 #app-container.initial-state h1 {
-    margin-bottom: 40px; /* More space below title */
-    font-size: 2.5em; /* Larger title */
+    margin-bottom: 40px;
+    font-size: 2.5em;
+    /* Add text shadow for better readability over image */
+    text-shadow: 0px 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+/* Style the initial controls for better contrast */
+#app-container.initial-state #room-controls {
+    background-color: rgba(32, 33, 36, 0.75); /* Semi-transparent dark background */
+    padding: 20px 30px;
+    border-radius: 25px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Remove Emoji Popup Styles */

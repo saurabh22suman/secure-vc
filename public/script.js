@@ -22,6 +22,7 @@ const waitingRoomId = document.getElementById('waitingRoomId'); // New
 const peerStatusIcons = document.getElementById('peer-status-icons'); // New
 const peerMicStatus = document.getElementById('peer-mic-status'); // New
 const peerVideoStatus = document.getElementById('peer-video-status'); // New
+const mainTitle = document.getElementById('main-title'); // New ref for H1
 
 const socket = io(); // Initialize Socket.IO connection
 
@@ -105,6 +106,8 @@ socket.on('room-created', (roomId) => {
     // Show waiting message for caller
     waitingRoomId.textContent = roomId;
     waitingOverlay.classList.remove('hidden');
+    // Update title
+    mainTitle.textContent = 'Enjoy your time together';
     // Caller waits for peer to join
 });
 
@@ -120,6 +123,8 @@ socket.on('room-joined', (roomId) => {
     waitingOverlay.classList.add('hidden'); // Ensure hidden for joiner
     // Non-caller signals readiness to start call negotiation
     socket.emit('ready', currentRoom);
+    // Update title
+    mainTitle.textContent = 'Enjoy your time together';
 });
 
 socket.on('peer-joined', () => {
@@ -310,12 +315,12 @@ socket.on('ice-candidate', async ({ candidate }) => { // Destructure candidate
 // --- Hangup Logic ---
 
 endCallButton.addEventListener('click', () => {
-    handleHangup(true); // Call the hangup function and send message
+    handleHangup(true, 'local_hangup'); // Pass reason for local action
 });
 
 // Function to handle call hangup and cleanup
-function handleHangup(shouldEmit) {
-    console.log('Handling hangup...');
+function handleHangup(shouldEmit, reason = 'unknown') {
+    console.log(`Handling hangup... Reason: ${reason}`);
     if (peerConnection) {
         peerConnection.close();
         peerConnection = null;
@@ -324,9 +329,17 @@ function handleHangup(shouldEmit) {
         localStream.getTracks().forEach(track => track.stop());
         localStream = null;
     }
-    remoteVideo.srcObject = null; // Clear remote video
-    localVideo.srcObject = null; // Clear local video preview
+    remoteVideo.srcObject = null;
+    localVideo.srcObject = null;
     remoteStream = null;
+
+    // --- Show Notification --- 
+    if (reason === 'peer_hangup') {
+        alert('The other user has ended the call.');
+    } else if (reason === 'peer_disconnect') {
+        alert('The other user has disconnected.');
+    }
+    // No alert for 'local_hangup' or 'unknown'
 
     // Reset UI
     roomControlsDiv.style.display = 'flex'; // Show room controls again
@@ -362,22 +375,22 @@ function handleHangup(shouldEmit) {
     currentRoom = null;
     isCaller = false;
     callInitiated = false; // Reset flag on hangup
+    mainTitle.textContent = 'B4 Secure VC'; // Reset title
 }
 
 // Listen for hangup signal from the other peer
 socket.on('hangup', () => {
     console.log('Received hangup signal from peer.');
-    handleHangup(false); // Clean up locally, don't re-emit
+    handleHangup(false, 'peer_hangup'); // Pass reason
 });
 
-// Listen for peer disconnection signal from server (now includes room context)
-socket.on('peer-disconnected', (socketId) => { // Server might need modification to only send if in same room
+// Listen for peer disconnection signal from server
+socket.on('peer-disconnected', (data) => { 
+    const socketId = typeof data === 'object' ? data.socketId : data; // Handle potential object structure
     console.log('Peer disconnected signal received:', socketId);
-    // We might get this even if we weren't connected via WebRTC yet, or after hanging up
-    // Only reset if we are currently in an active call state (peerConnection exists)
     if (peerConnection) {
         console.log('Hanging up due to peer disconnection.');
-        handleHangup(false); // Clean up locally, don't re-emit
+        handleHangup(false, 'peer_disconnect'); // Pass reason
     }
 });
 
