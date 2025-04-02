@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Video Call</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Secure Video Call</h1>
+
+    <!-- Room ID Display (always visible once room is set) -->
+    <div id="room-display" style="margin-bottom: 15px; display: none;">
+        Current Room: <strong id="currentRoomId"></strong>
+        <button id="copyRoomId" style="margin-left: 10px;">Copy ID</button>
+    </div>
+
+    <!-- Controls for Creating/Joining a Room -->
+    <div id="room-controls">
+        <input type="text" id="roomIdInput" placeholder="Enter Room ID" />
+        <button id="joinRoom">Join Room</button>
+        <button id="createRoom">Create Room & Start</button>
+        <!-- <p>Current Room: <span id="currentRoomId">None</span></p> --> <!-- Moved outside -->
+    </div>
+
+    <!-- Video Elements -->
+    <div id="videos" style="display: none;"> <!-- Hide videos initially -->
+        <video id="localVideo" autoplay muted></video>
+        <video id="remoteVideo" autoplay></video>
+    </div>
+
+    <!-- In-Call Controls -->
+    <div id="call-controls" style="display: none;">
+        <button id="endCall">End Call</button>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html> 

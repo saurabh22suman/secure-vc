@@ -1,0 +1,129 @@
+body {
+    font-family: sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+h1 {
+    color: #333;
+}
+
+#videos {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+video {
+    width: 320px;
+    height: 240px;
+    border: 1px solid #ccc;
+    background-color: #000;
+}
+
+#controls button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+
+#startCall {
+    background-color: #28a745; /* Green */
+}
+
+#startCall:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+#endCall {
+    background-color: #dc3545; /* Red */
+}
+
+#endCall:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+#room-display {
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    text-align: center;
+}
+
+#room-display strong {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+#copyRoomId {
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    background-color: #007bff; /* Blue */
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+
+#copyRoomId:hover {
+    background-color: #0056b3;
+}
+
+#room-controls input[type="text"] {
+    padding: 8px;
+    margin-right: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+#room-controls button {
+    padding: 8px 15px;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 0 5px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+
+#joinRoom {
+    background-color: #17a2b8; /* Teal */
+}
+
+#createRoom {
+    background-color: #ffc107; /* Yellow */
+    color: #333;
+}
+
+/* Adjust call control button if needed */
+#call-controls button {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 0 10px;
+    border: none;
+    border-radius: 5px;
+    color: white;
+}
+
+#endCall {
+    background-color: #dc3545; /* Red */
+}
+
+#endCall:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+} 
